@@ -18,6 +18,7 @@ class PrediksiController extends Controller
         if ($latestRun) {
             $hasilPrediksi = HasilPrediksi::where('run_id', $latestRun->run_id)
                                           ->orderBy('tahun_prediksi', 'asc')
+                                          ->orderBy('bulan_prediksi', 'asc')
                                           ->get();
             
             $akurasi = [
@@ -29,7 +30,7 @@ class PrediksiController extends Controller
             ];
         }
 
-        $dataHistoris = DataBeras::orderBy('tahun', 'asc')->get();
+        $dataHistoris = DataBeras::orderBy('tahun', 'asc')->orderBy('bulan', 'asc')->get();
 
         return view('admin.prediksi.index', compact('hasilPrediksi', 'dataHistoris', 'akurasi'));
     }
@@ -37,14 +38,21 @@ class PrediksiController extends Controller
     public function jalankan()
     {
         try {
-            Artisan::call('arima:forecast');
+            $exitCode = Artisan::call('arima:forecast');
+            
             $output = Artisan::output();
+
+            if ($exitCode !== 0) {
+                return redirect()->route('admin.prediksi.index')
+                                 ->with('error', 'Proses Gagal! Pesan dari Terminal: ' . $output);
+            }
 
             return redirect()->route('admin.prediksi.index')
                              ->with('success', 'Prediksi berhasil dijalankan! Hasil telah diperbarui.');
+                             
         } catch (\Exception $e) {
             return redirect()->route('admin.prediksi.index')
-                             ->with('error', 'Terjadi kesalahan saat menjalankan prediksi: ' . $e->getMessage());
+                             ->with('error', 'Terjadi kesalahan kritis: ' . $e->getMessage());
         }
     }
 }

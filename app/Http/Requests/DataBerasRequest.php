@@ -14,15 +14,19 @@ class DataBerasRequest extends FormRequest
 
     public function rules(): array
     {
-        $id = $this->route('data_bera'); 
+        $id = $this->route('data_bera');
 
         return [
-            'tahun' => [
+            'tahun' => 'required|digits:4|integer|min:2000',
+            'bulan' => [
                 'required',
-                'digits:4',
                 'integer',
-                'min:2000',
-                Rule::unique('data_beras', 'tahun')->ignore($id),
+                'between:1,12',
+                Rule::unique('data_beras', 'bulan')
+                    ->where(function ($query) {
+                        return $query->where('tahun', $this->tahun);
+                    })
+                    ->ignore($id),
             ],
             'produksi_ton' => 'required|numeric|min:0',
             'stok_awal_ton' => 'nullable|numeric|min:0',

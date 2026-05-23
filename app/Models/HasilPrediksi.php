@@ -13,6 +13,7 @@ class HasilPrediksi extends Model
     protected $fillable = [
         'run_id',
         'tahun_prediksi',
+        'bulan_prediksi',
         'nilai_prediksi',
         'lower_bound',
         'upper_bound',

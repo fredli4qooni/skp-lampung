@@ -52,7 +52,11 @@ class JalankanArima extends Command
 
         $this->info('Mengeksekusi Python script... (Tunggu sebentar, komputasi ML memakan waktu beberapa detik)');
         
-        $process = new Process([$pythonPath, $scriptPath, '--p', $p, '--d', $d, '--q', $q]);
+        $env = [
+            'SYSTEMROOT' => getenv('SYSTEMROOT') ?: 'C:\\Windows',
+            'PATH' => getenv('PATH')
+        ];
+        $process = new Process([$pythonPath, $scriptPath, '--p', $p, '--d', $d, '--q', $q], null, $env);
         $process->setTimeout(120);
         $process->run();
 
@@ -93,6 +97,7 @@ class JalankanArima extends Command
             HasilPrediksi::create([
                 'run_id' => $runId,
                 'tahun_prediksi' => $pred['tahun'],
+                'bulan_prediksi' => $pred['bulan'],
                 'nilai_prediksi' => $pred['nilai'],
                 'lower_bound' => $pred['lower_bound'],
                 'upper_bound' => $pred['upper_bound'],

@@ -10,7 +10,10 @@ class DataBerasController extends Controller
 {
     public function index(Request $request)
     {
-        $dataBeras = DataBeras::orderBy('tahun', 'desc')->paginate(10);
+        $dataBeras = DataBeras::orderBy('tahun', 'desc')
+                              ->orderBy('bulan', 'desc')
+                              ->paginate(12);
+                              
         return view('admin.data-beras.index', compact('dataBeras'));
     }
 

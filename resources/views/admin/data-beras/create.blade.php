@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Tambah Data Beras') }}
+            {{ __('Tambah Data Beras Bulanan') }}
         </h2>
     </x-slot>
 
@@ -16,8 +16,19 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
                                 <x-input-label for="tahun" :value="__('Tahun')" />
-                                <x-text-input id="tahun" class="block mt-1 w-full" type="number" name="tahun" :value="old('tahun')" required autofocus />
+                                <x-text-input id="tahun" class="block mt-1 w-full" type="number" name="tahun" :value="old('tahun', date('Y'))" required autofocus />
                                 <x-input-error :messages="$errors->get('tahun')" class="mt-2" />
+                            </div>
+
+                            <div>
+                                <x-input-label for="bulan" :value="__('Bulan')" />
+                                <select id="bulan" name="bulan" class="block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm text-gray-700" required>
+                                    <option value="">-- Pilih Bulan --</option>
+                                    @foreach([1=>'Januari', 2=>'Februari', 3=>'Maret', 4=>'April', 5=>'Mei', 6=>'Juni', 7=>'Juli', 8=>'Agustus', 9=>'September', 10=>'Oktober', 11=>'November', 12=>'Desember'] as $num => $name)
+                                        <option value="{{ $num }}" {{ old('bulan') == $num ? 'selected' : '' }}>{{ $name }}</option>
+                                    @endforeach
+                                </select>
+                                <x-input-error :messages="$errors->get('bulan')" class="mt-2" />
                             </div>
 
                             <div>
@@ -48,10 +59,9 @@
                                 <x-text-input id="ekspor_ton" class="block mt-1 w-full input-hitung" type="number" step="0.01" name="ekspor_ton" :value="old('ekspor_ton', 0)" />
                             </div>
 
-                            <div class="md:col-span-2">
+                            <div>
                                 <x-input-label for="ketersediaan_ton" :value="__('Ketersediaan Bersih (Ton)')" />
                                 <x-text-input id="ketersediaan_ton" class="block mt-1 w-full bg-gray-50 border-gray-300 font-bold text-[#1E3A5F]" type="number" step="0.01" name="ketersediaan_ton" :value="old('ketersediaan_ton')" required readonly placeholder="0.00" />
-                                <span class="text-xs text-indigo-500">Nilai ini dihitung otomatis: (Produksi + Stok + Impor) - (Konsumsi + Ekspor)</span>
                                 <x-input-error :messages="$errors->get('ketersediaan_ton')" class="mt-2" />
                             </div>
                             
@@ -64,7 +74,7 @@
                         <div class="flex items-center justify-end mt-4">
                             <a href="{{ route('admin.data-beras.index') }}" class="text-gray-600 hover:text-gray-900 mr-4">Batal</a>
                             <x-primary-button class="ml-4 bg-[#1E3A5F]">
-                                {{ __('Simpan Data') }}
+                                {{ __('Simpan Data Bulanan') }}
                             </x-primary-button>
                         </div>
                     </form>
@@ -91,10 +101,7 @@
             }
 
             hitungKetersediaan();
-
-            inputs.forEach(input => {
-                input.addEventListener('input', hitungKetersediaan);
-            });
+            inputs.forEach(input => input.addEventListener('input', hitungKetersediaan));
         });
     </script>
 </x-app-layout>

@@ -13,6 +13,7 @@ class DataBeras extends Model
 
     protected $fillable = [
         'tahun',
+        'bulan',
         'produksi_ton',
         'stok_awal_ton',
         'impor_ton',
@@ -20,6 +21,6 @@ class DataBeras extends Model
         'konsumsi_ton',
         'ketersediaan_ton',
         'sumber_data',
-        'catatan'
+        'catatan',
     ];
 }
