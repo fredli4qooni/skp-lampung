@@ -73,7 +73,7 @@
                     <span class="w-4 h-1 bg-[#2E6DA4] mr-2 block"></span> Data Historis
                 </div>
                 <div class="flex items-center">
-                    <span class="w-4 h-1 bg-[#FF6B35] border-t-2 border-dashed border-[#FF6B35] mr-2 block"></span> Prediksi ARIMA
+                    <span class="w-4 h-1 bg-transparent border-t-2 border-dashed border-[#9CA3AF] mr-2 block"></span> Prediksi ARIMA (Warna titik sesuai status)
                 </div>
             </div>
         </div>
@@ -108,16 +108,31 @@
             const historicValues = dataHistoris.map(item => parseFloat(item.ketersediaan_ton) / 1000);
             const predValues = hasilPrediksi.map(item => parseFloat(item.nilai_prediksi) / 1000);
 
+            const predColors = hasilPrediksi.map(item => {
+                let status = item.status_kondisi ? item.status_kondisi.toLowerCase() : '';
+                if(status === 'aman') return '#16A34A';
+                if(status === 'waspada') return '#EAB308';
+                return '#DC2626';
+            });
+
             let datasetHistoris = [...historicValues];
             let datasetPrediksi = [];
+            let datasetPrediksiColors = [];
 
             if (hasilPrediksi.length > 0) {
                 const finalHistoricVal = historicValues[historicValues.length - 1];
                 datasetHistoris = [...historicValues, ...Array(predValues.length).fill(null)];
+                
                 datasetPrediksi = [
                     ...Array(historicValues.length - 1).fill(null),
                     finalHistoricVal,
                     ...predValues
+                ];
+
+                datasetPrediksiColors = [
+                    ...Array(historicValues.length - 1).fill('transparent'),
+                    '#2E6DA4',
+                    ...predColors
                 ];
             }
 
@@ -139,11 +154,13 @@
                         {
                             label: 'Prediksi (Ribu Ton)',
                             data: datasetPrediksi,
-                            borderColor: '#FF6B35',
-                            borderWidth: 3,
+                            borderColor: '#9CA3AF',
+                            borderWidth: 2,
                             borderDash: [5, 5],
                             backgroundColor: 'transparent',
-                            pointBackgroundColor: '#FF6B35',
+                            pointBackgroundColor: datasetPrediksiColors,
+                            pointBorderColor: datasetPrediksiColors,
+                            pointRadius: 6,
                             tension: 0.1
                         }
                     ]

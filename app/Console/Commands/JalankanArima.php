@@ -87,18 +87,20 @@ class JalankanArima extends Command
         $now = now();
 
         foreach ($hasil['predictions'] as $pred) {
-            $status = 'darurat';
-            if ($pred['nilai'] >= $thresholdAman) {
+            $nilaiPrediksi = $pred['nilai'];
+
+            if ($nilaiPrediksi >= 1200) {
                 $status = 'aman';
-            } elseif ($pred['nilai'] >= $thresholdWaspada) {
+            } elseif ($nilaiPrediksi >= 800 && $nilaiPrediksi < 1200) {
                 $status = 'waspada';
+            } else {
+                $status = 'darurat';
             }
 
             HasilPrediksi::create([
                 'run_id' => $runId,
                 'tahun_prediksi' => $pred['tahun'],
-                'bulan_prediksi' => $pred['bulan'],
-                'nilai_prediksi' => $pred['nilai'],
+                'nilai_prediksi' => $nilaiPrediksi,
                 'lower_bound' => $pred['lower_bound'],
                 'upper_bound' => $pred['upper_bound'],
                 'parameter_p' => $p,

@@ -7,8 +7,9 @@ use App\Http\Controllers\DataBerasController;
 use App\Http\Controllers\PrediksiController;
 use App\Http\Controllers\LaporanController;
 use App\Http\Controllers\AdminDashboardController;
+use App\Http\Controllers\HomeController;
 
-Route::get('/', [DashboardController::class, 'index'])->name('home');
+Route::get('/', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
 
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
