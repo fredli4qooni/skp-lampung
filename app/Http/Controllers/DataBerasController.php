@@ -13,7 +13,6 @@ class DataBerasController extends Controller
         $dataBeras = DataBeras::orderBy('tahun', 'desc')
                               ->orderBy('bulan', 'desc')
                               ->paginate(12);
-                              
         return view('admin.data-beras.index', compact('dataBeras'));
     }
 
@@ -24,9 +23,15 @@ class DataBerasController extends Controller
 
     public function store(DataBerasRequest $request)
     {
-        DataBeras::create($request->validated());
-        return redirect()->route('admin.data-beras.index')
-                         ->with('success', 'Data beras berhasil ditambahkan!');
+        $validatedData = $request->validated();
+        $validatedData['impor_ton'] = 0;
+        $validatedData['ekspor_ton'] = 0;
+        $validatedData['stok_awal_ton'] = 0; 
+        
+        $validatedData['konsumsi_ton'] = 73.75;
+
+        DataBeras::create($validatedData);
+        return redirect()->route('admin.data-beras.index')->with('success', 'Data beras berhasil ditambahkan!');
     }
 
     public function edit(string $id)
@@ -38,18 +43,21 @@ class DataBerasController extends Controller
     public function update(DataBerasRequest $request, string $id)
     {
         $dataBeras = DataBeras::findOrFail($id);
-        $dataBeras->update($request->validated());
+        $validatedData = $request->validated();
+        $validatedData['impor_ton'] = 0;
+        $validatedData['ekspor_ton'] = 0;
+        $validatedData['stok_awal_ton'] = 0; 
         
-        return redirect()->route('admin.data-beras.index')
-                         ->with('success', 'Data beras berhasil diperbarui!');
+        $validatedData['konsumsi_ton'] = 73.75;
+
+        $dataBeras->update($validatedData);
+        return redirect()->route('admin.data-beras.index')->with('success', 'Data beras berhasil diperbarui!');
     }
 
     public function destroy(string $id)
     {
         $dataBeras = DataBeras::findOrFail($id);
         $dataBeras->delete();
-
-        return redirect()->route('admin.data-beras.index')
-                         ->with('success', 'Data beras berhasil dihapus!');
+        return redirect()->route('admin.data-beras.index')->with('success', 'Data beras berhasil dihapus!');
     }
 }

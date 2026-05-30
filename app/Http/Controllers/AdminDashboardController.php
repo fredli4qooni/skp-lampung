@@ -10,9 +10,15 @@ class AdminDashboardController extends Controller
 {
     public function index()
     {
-        $totalTahun = DataBeras::count();
-        $rataProduksi = DataBeras::avg('produksi_ton') ?? 0;
-        $rataKonsumsi = DataBeras::avg('konsumsi_ton') ?? 0;
+        $totalTahun = DataBeras::select('tahun')->distinct()->count('tahun');
+        
+        $dataTahunan = DataBeras::selectRaw('tahun, sum(produksi_ton) as total_produksi')
+                                ->groupBy('tahun')
+                                ->get();
+        $rataProduksi = $dataTahunan->avg('total_produksi') ?? 0;
+        
+        $konsumsiTahunan = 885;
+
         $latestRun = HasilPrediksi::orderBy('created_at', 'desc')->first();
         $infoModel = null;
         $statusMendatang = 'Belum Diprediksi';
@@ -35,8 +41,18 @@ class AdminDashboardController extends Controller
             }
         }
 
-        $recentData = DataBeras::orderBy('tahun', 'desc')->take(5)->get();
+        $recentData = DataBeras::orderBy('tahun', 'desc')
+                               ->orderBy('bulan', 'desc')
+                               ->take(5)
+                               ->get();
 
-        return view('dashboard', compact('totalTahun', 'rataProduksi', 'rataKonsumsi', 'infoModel', 'statusMendatang', 'recentData'));
+        return view('dashboard', compact(
+            'totalTahun', 
+            'rataProduksi', 
+            'konsumsiTahunan', 
+            'infoModel', 
+            'statusMendatang', 
+            'recentData'
+        ));
     }
 }

@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Analisis & Prediksi ARIMA (Tahunan Teragregasi)') }}
+            {{ __('Analisis & Dasbor Prediksi ARIMA') }}
         </h2>
     </x-slot>
 
@@ -21,15 +21,12 @@
             <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200 flex flex-col justify-between">
                 <div>
                     <h3 class="text-lg font-bold text-[#1E3A5F] mb-2">Komputasi Mesin ARIMA</h3>
-                    <p class="text-sm text-gray-600 mb-4">Sistem akan mengagregasi data ketersediaan bulanan secara otomatis menjadi total tahunan sebelum mengeksekusi peramalan tren makro 3 tahun ke depan.</p>
+                    <p class="text-sm text-gray-600 mb-4">Sistem akan memproses seluruh data riwayat secara otomatis menggunakan model prediktif kecerdasan buatan Python.</p>
                 </div>
-                <form action="{{ route('admin.prediksi.jalankan') }}" method="POST" onsubmit="return confirm('Jalankan komputasi?');">
+                <form action="{{ route('admin.prediksi.jalankan') }}" method="POST" onsubmit="return confirm('Jalankan komputasi model?');">
                     @csrf
                     <button type="submit" class="w-full bg-[#1E3A5F] hover:bg-[#2E6DA4] text-white font-bold py-3 px-4 rounded transition-colors flex items-center justify-center shadow-md">
-                        <svg class="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
-                        </svg>
-                        Jalankan Proyeksi Makro (3 Tahun)
+                        Jalankan Proyeksi
                     </button>
                 </form>
             </div>
@@ -51,8 +48,8 @@
                             <div class="text-xl font-bold text-gray-800 mt-1">{{ number_format($akurasi['rmse'], 2) }}</div>
                         </div>
                         <div class="bg-gray-50 p-4 rounded-md border border-gray-100 flex flex-col justify-center items-center">
-                            <div class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Status Enjin</div>
-                            <span class="bg-blue-100 text-blue-800 text-xs font-bold px-3 py-1.5 rounded-full uppercase">ARIMA</span>
+                            <div class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Status</div>
+                            <span class="bg-green-100 text-green-800 text-xs font-bold px-3 py-1.5 rounded-full uppercase">ARIMA</span>
                         </div>
                     </div>
                 @else
@@ -61,140 +58,298 @@
             </div>
         </div>
 
-        <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200 mb-6">
-            <h3 class="text-lg font-bold text-[#1E3A5F] mb-4">Grafik Tren Ketersediaan Tahunan (Ribu Ton)</h3>
-            <div class="relative w-full h-[350px]">
-                <canvas id="arimaChart"></canvas>
+        <div class="flex justify-between items-center mb-6 bg-white p-4 rounded-lg shadow-sm border border-gray-200 flex-col sm:flex-row gap-4">
+            <div>
+                <h3 class="text-base font-bold text-gray-700">Pilihan Skala Dimensi Tampilan:</h3>
+                <p class="text-xs text-gray-500">Pilih rentang waktu penyajian data pada grafik dan tabel analisa neraca.</p>
+            </div>
+            <div class="inline-flex rounded-md shadow-sm" role="group">
+                <button type="button" id="btn-tahunan" onclick="switchMode('tahunan')" class="px-5 py-2.5 text-sm font-bold rounded-l-lg border border-gray-200 bg-[#1E3A5F] text-white transition-colors">
+                    Prediksi Tahunan (Juta Ton)
+                </button>
+                <button type="button" id="btn-bulanan" onclick="switchMode('bulanan')" class="px-5 py-2.5 text-sm font-bold rounded-r-lg border-t border-b border-r border-gray-200 bg-white text-gray-700 hover:bg-gray-50 transition-colors">
+                    Prediksi Bulanan (Ribu Ton)
+                </button>
             </div>
         </div>
 
-        <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-            <h3 class="text-lg font-bold text-[#1E3A5F] mb-4">Tabel Proyeksi 3 Tahun Kedepan</h3>
-            <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
+        <div class="grid grid-cols-1 gap-8 mb-8">
+            <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                <div class="flex justify-between items-center mb-4">
+                    <h4 class="text-base font-bold text-[#1E3A5F] uppercase tracking-wider">1. Grafik Ketersediaan Historis & Proyeksi AI</h4>
+                    <span id="badge-skala-produksi" class="text-sm font-bold text-[#2E6DA4] bg-blue-50 px-3 py-1.5 rounded-md border border-blue-100 shadow-sm">Skala: Juta Ton</span>
+                </div>
+                <div class="relative w-full h-[400px]">
+                    <canvas id="chartProduksi"></canvas>
+                </div>
+            </div>
+
+            <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                <div class="flex justify-between items-center mb-4">
+                    <h4 class="text-base font-bold text-[#1E3A5F] uppercase tracking-wider">2. Grafik Tren Beban Konsumsi Daerah</h4>
+                    <span id="badge-skala-konsumsi" class="text-sm font-bold text-orange-600 bg-orange-50 px-3 py-1.5 rounded-md border border-orange-100 shadow-sm">Skala: Juta Ton</span>
+                </div>
+                <div class="relative w-full h-[400px]">
+                    <canvas id="chartKonsumsi"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200 mb-6">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold text-[#1E3A5F]">Tabel Proyeksi Neraca Ketersediaan</h3>
+                <span id="label-asumsi-konsumsi" class="text-sm bg-gray-100 text-gray-600 px-3 py-1 rounded border font-medium">Asumsi Beban: <b>0,89 Juta Ton/Tahun</b></span>
+            </div>
+            <div class="overflow-x-auto border rounded-lg">
+                <table class="min-w-full divide-y divide-gray-200 text-sm">
                     <thead class="bg-gray-50">
                         <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tahun</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Proyeksi (Ton)</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Batas Bawah</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Batas Atas</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kondisi</th>
+                            <th id="th-periode" class="px-6 py-3 text-left font-bold text-gray-600 uppercase tracking-wider">Tahun</th>
+                            <th id="th-ketersediaan" class="px-6 py-3 text-right font-bold text-gray-600 uppercase tracking-wider">Ketersediaan</th>
+                            <th id="th-konsumsi" class="px-6 py-3 text-right font-bold text-gray-600 uppercase tracking-wider">Beban Konsumsi</th>
+                            <th id="th-neraca" class="px-6 py-3 text-right font-bold text-gray-600 uppercase tracking-wider">Neraca / Selisih</th>
+                            <th class="px-6 py-3 text-center font-bold text-gray-600 uppercase tracking-wider">Kondisi</th>
                         </tr>
                     </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
-                        @forelse($hasilPrediksi as $pred)
-                            <tr>
-                                <td class="px-6 py-4 whitespace-nowrap font-semibold text-gray-900">{{ $pred->tahun_prediksi }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap font-bold text-[#1E3A5F]">{{ number_format($pred->nilai_prediksi, 2, ',', '.') }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-gray-600">{{ number_format($pred->lower_bound, 2, ',', '.') }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-gray-600">{{ number_format($pred->upper_bound, 2, ',', '.') }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    @if($pred->status_kondisi === 'aman')
-                                        <span class="bg-green-100 text-green-800 text-xs font-semibold px-2.5 py-1 rounded border border-green-200 uppercase">Aman</span>
-                                    @elseif($pred->status_kondisi === 'waspada')
-                                        <span class="bg-yellow-100 text-yellow-800 text-xs font-semibold px-2.5 py-1 rounded border border-yellow-200 uppercase">Waspada</span>
-                                    @else
-                                        <span class="bg-red-100 text-red-800 text-xs font-semibold px-2.5 py-1 rounded border border-red-200 uppercase">Darurat</span>
-                                    @endif
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="5" class="px-6 py-4 text-center text-gray-500">Tidak ada data hasil prediksi.</td>
-                            </tr>
-                        @endforelse
-                    </tbody>
+                    <tbody id="tabel-prediksi-body" class="bg-white divide-y divide-gray-200">
+                        </tbody>
                 </table>
             </div>
         </div>
     </div>
 
-    <script id="data-historis-json" type="application/json">{!! json_encode($dataHistoris) !!}</script>
-    <script id="hasil-prediksi-json" type="application/json">{!! json_encode($hasilPrediksi) !!}</script>
+    <script id="historis-tahunan-json" type="application/json">{!! json_encode($dataHistorisTahunan ?? []) !!}</script>
+    <script id="historis-bulanan-json" type="application/json">{!! json_encode($dataHistorisBulanan ?? []) !!}</script>
+    <script id="prediksi-json" type="application/json">{!! json_encode($hasilPrediksi ?? []) !!}</script>
+    
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const dataHistoris = JSON.parse(document.getElementById('data-historis-json').textContent);
-            const hasilPrediksi = JSON.parse(document.getElementById('hasil-prediksi-json').textContent);
+        let currentMode = 'tahunan';
+        let chartP, chartK;
 
-            const historicLabels = dataHistoris.map(item => item.tahun);
-            const predLabels = hasilPrediksi.map(item => item.tahun_prediksi);
-            const allLabels = [...historicLabels, ...predLabels];
+        const histTahunan = JSON.parse(document.getElementById('historis-tahunan-json').textContent) || [];
+        const histBulanan = JSON.parse(document.getElementById('historis-bulanan-json').textContent) || [];
+        const prediksiData = JSON.parse(document.getElementById('prediksi-json').textContent) || [];
 
-            const historicValues = dataHistoris.map(item => parseFloat(item.ketersediaan_ton) / 1000);
-            const predValues = hasilPrediksi.map(item => parseFloat(item.nilai_prediksi) / 1000);
+        const namaBulanMap = {1:'Jan', 2:'Feb', 3:'Mar', 4:'Apr', 5:'Mei', 6:'Jun', 7:'Jul', 8:'Agu', 9:'Sep', 10:'Okt', 11:'Nov', 12:'Des'};
 
-            const predColors = hasilPrediksi.map(item => {
-                let status = item.status_kondisi ? item.status_kondisi.toLowerCase() : '';
-                if(status === 'aman') return '#16A34A';
-                if(status === 'waspada') return '#EAB308';
-                return '#DC2626';
-            });
+        function formatId(num) {
+            return new Intl.NumberFormat('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(num);
+        }
 
-            let datasetHistoris = [...historicValues];
-            let datasetPrediksi = [];
-            let datasetPrediksiColors = [];
+        function switchMode(mode) {
+            currentMode = mode;
+            const btnT = document.getElementById('btn-tahunan');
+            const btnB = document.getElementById('btn-bulanan');
 
-            if (hasilPrediksi.length > 0 && historicValues.length > 0) {
-                const finalHistoricVal = historicValues[historicValues.length - 1];
-                datasetHistoris = [...historicValues, ...Array(predValues.length).fill(null)];
+            if (mode === 'tahunan') {
+                if(btnT) btnT.className = "px-5 py-2.5 text-sm font-bold rounded-l-lg border border-gray-200 bg-[#1E3A5F] text-white transition-colors";
+                if(btnB) btnB.className = "px-5 py-2.5 text-sm font-bold rounded-r-lg border-t border-b border-r border-gray-200 bg-white text-gray-700 hover:bg-gray-50 transition-colors";
+                if(document.getElementById('badge-skala-produksi')) document.getElementById('badge-skala-produksi').innerText = "Skala: Juta Ton";
+                if(document.getElementById('badge-skala-konsumsi')) document.getElementById('badge-skala-konsumsi').innerText = "Skala: Juta Ton";
+                if(document.getElementById('label-asumsi-konsumsi')) document.getElementById('label-asumsi-konsumsi').innerHTML = "Asumsi Beban: <b>0,89 Juta Ton/Tahun</b>";
+            } else {
+                if(btnB) btnB.className = "px-5 py-2.5 text-sm font-bold rounded-r-lg border border-[#1E3A5F] bg-[#1E3A5F] text-white transition-colors";
+                if(btnT) btnT.className = "px-5 py-2.5 text-sm font-bold rounded-l-lg border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 transition-colors";
+                if(document.getElementById('badge-skala-produksi')) document.getElementById('badge-skala-produksi').innerText = "Skala: Ribu Ton";
+                if(document.getElementById('badge-skala-konsumsi')) document.getElementById('badge-skala-konsumsi').innerText = "Skala: Ribu Ton";
+                if(document.getElementById('label-asumsi-konsumsi')) document.getElementById('label-asumsi-konsumsi').innerHTML = "Asumsi Beban: <b>73,75 Ribu Ton/Bulan</b>";
+            }
+            renderAll();
+        }
+
+        function renderAll() {
+            let labels = [];
+            let prodHistorisVal = [];
+            let prodPrediksiVal = [];
+            let konsumsiValues = [];
+
+            let thPeriode = document.getElementById('th-periode');
+            let thKetersediaan = document.getElementById('th-ketersediaan');
+            let thKonsumsi = document.getElementById('th-konsumsi');
+            let thNeraca = document.getElementById('th-neraca');
+            let tbody = document.getElementById('tabel-prediksi-body');
+
+            if(!tbody) return;
+            tbody.innerHTML = '';
+
+            if (currentMode === 'tahunan') {
+                if(thPeriode) thPeriode.innerText = "Tahun Proyeksi";
+                if(thKetersediaan) thKetersediaan.innerText = "Ketersediaan (Juta Ton)";
+                if(thKonsumsi) thKonsumsi.innerText = "Beban Konsumsi (Juta Ton)";
+                if(thNeraca) thNeraca.innerText = "Neraca / Selisih (Juta Ton)";
+
+                labels = [...histTahunan.map(h => h.tahun), ...prediksiData.map(p => p.tahun_prediksi)];
+                prodHistorisVal = [...histTahunan.map(h => parseFloat(h.ketersediaan_ton) / 1000), ...Array(prediksiData.length).fill(null)];
                 
-                datasetPrediksi = [
-                    ...Array(historicValues.length - 1).fill(null),
-                    finalHistoricVal,
-                    ...predValues
-                ];
+                if(prediksiData.length > 0 && histTahunan.length > 0) {
+                    prodPrediksiVal = [...Array(histTahunan.length - 1).fill(null), parseFloat(histTahunan[histTahunan.length-1].ketersediaan_ton)/1000, ...prediksiData.map(p => parseFloat(p.nilai_prediksi)/1000)];
+                }
+                konsumsiValues = Array(labels.length).fill(885 / 1000);
 
-                datasetPrediksiColors = [
-                    ...Array(historicValues.length - 1).fill('transparent'),
-                    '#2E6DA4',
-                    ...predColors
-                ];
+                if (prediksiData.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="5" class="px-6 py-6 text-center text-gray-500 italic">Data proyeksi masa depan belum tersedia.</td></tr>`;
+                } else {
+                    prediksiData.forEach(p => {
+                        let ketersediaan = p.nilai_prediksi / 1000;
+                        let konsumsi = 885 / 1000;
+                        let selisih = ketersediaan - konsumsi;
+                        let kondisiStr = p.status_kondisi ? p.status_kondisi.toLowerCase() : 'aman';
+                        let statusBg = kondisiStr === 'aman' ? 'bg-green-100 text-green-800' : (kondisiStr === 'waspada' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800');
+
+                        tbody.innerHTML += `
+                            <tr class="hover:bg-gray-50 transition-colors">
+                                <td class="px-6 py-4 whitespace-nowrap font-bold text-gray-900 text-base">${p.tahun_prediksi}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-right font-semibold text-[#2E6DA4]">${formatId(ketersediaan)}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-right text-gray-600">${formatId(konsumsi)}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-right font-bold text-base ${selisih >= 0 ? 'text-green-600 bg-green-50':'text-red-600 bg-red-50'}">
+                                    ${selisih >= 0 ? 'Surplus (+)' : 'Defisit (-)'} ${formatId(Math.abs(selisih))}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-center">
+                                    <span class="px-3 py-1 text-xs font-bold rounded uppercase ${statusBg}">${p.status_kondisi || 'AMAN'}</span>
+                                </td>
+                            </tr>`;
+                    });
+                }
+            } 
+            else {
+                if(thPeriode) thPeriode.innerText = "Bulan Proyeksi";
+                if(thKetersediaan) thKetersediaan.innerText = "Ketersediaan (Ribu Ton)";
+                if(thKonsumsi) thKonsumsi.innerText = "Beban Konsumsi (Ribu Ton)";
+                if(thNeraca) thNeraca.innerText = "Neraca Proyeksi (Ribu Ton)";
+
+                let histLabels = histBulanan.map(h => `${namaBulanMap[h.bulan]} ${h.tahun}`);
+                let pHistVal = histBulanan.map(h => parseFloat(h.ketersediaan_ton));
+                let kHistVal = histBulanan.map(h => parseFloat(h.konsumsi_ton) || 73.75);
+
+                let predLabels = [];
+                let pPredVal = [];
+                let kPredVal = [];
+
+                if (prediksiData.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="5" class="px-6 py-8 text-center text-gray-500 italic">Data proyeksi masa depan belum tersedia.</td></tr>`;
+                } else {
+                    prediksiData.forEach(p => {
+                        let ketersediaanBulan = parseFloat(p.nilai_prediksi) / 12;
+                        let konsumsiBulan = 73.75;
+                        let selisihBulan = ketersediaanBulan - konsumsiBulan;
+                        let kondisiStr = p.status_kondisi ? p.status_kondisi.toLowerCase() : 'aman';
+                        let statusBg = kondisiStr === 'aman' ? 'bg-green-100 text-green-800' : (kondisiStr === 'waspada' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800');
+
+                        for(let i=1; i<=12; i++) {
+                            predLabels.push(`${namaBulanMap[i]} ${p.tahun_prediksi}`);
+                            pPredVal.push(ketersediaanBulan);
+                            kPredVal.push(konsumsiBulan);
+
+                            tbody.innerHTML += `
+                                <tr class="hover:bg-gray-50 transition-colors">
+                                    <td class="px-6 py-4 whitespace-nowrap font-bold text-gray-900 text-sm">${namaBulanMap[i]} ${p.tahun_prediksi}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-right font-semibold text-[#2E6DA4]">${formatId(ketersediaanBulan)}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-right text-gray-600">${formatId(konsumsiBulan)}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-right font-bold text-sm ${selisihBulan >= 0 ? 'text-green-600':'text-red-600'}">
+                                        ${selisihBulan >= 0 ? 'Surplus (+)' : 'Defisit (-)'} ${formatId(Math.abs(selisihBulan))}
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-center">
+                                        <span class="px-2 py-1 text-[10px] font-bold rounded uppercase ${statusBg}">${p.status_kondisi || 'AMAN'}</span>
+                                    </td>
+                                </tr>`;
+                        }
+                    });
+                }
+
+                labels = [...histLabels, ...predLabels];
+                prodHistorisVal = [...pHistVal, ...Array(predLabels.length).fill(null)];
+                
+                if (prediksiData.length > 0 && histBulanan.length > 0) {
+                    prodPrediksiVal = [
+                        ...Array(histBulanan.length - 1).fill(null), 
+                        parseFloat(histBulanan[histBulanan.length-1].ketersediaan_ton), 
+                        ...pPredVal
+                    ];
+                } else {
+                    prodPrediksiVal = [...Array(histBulanan.length).fill(null), ...pPredVal];
+                }
+                
+                konsumsiValues = [...kHistVal, ...kPredVal];
             }
 
-            const ctx = document.getElementById('arimaChart').getContext('2d');
-            new Chart(ctx, {
+            updateCharts(labels, prodHistorisVal, prodPrediksiVal, konsumsiValues);
+        }
+
+        function updateCharts(labels, prodHist, prodPred, konsumsi) {
+            const canvasP = document.getElementById('chartProduksi');
+            const canvasK = document.getElementById('chartKonsumsi');
+            if(!canvasP || !canvasK) return;
+
+            if (chartP) chartP.destroy();
+            if (chartK) chartK.destroy();
+
+            const ctxP = canvasP.getContext('2d');
+            chartP = new Chart(ctxP, {
                 type: 'line',
                 data: {
-                    labels: allLabels,
+                    labels: labels,
                     datasets: [
-                        {
-                            label: 'Historis (Ribu Ton)',
-                            data: datasetHistoris,
-                            borderColor: '#2E6DA4',
-                            backgroundColor: 'rgba(46, 109, 164, 0.1)',
-                            borderWidth: 2,
-                            pointRadius: 4,
-                            fill: true,
-                            tension: 0.3
+                        { 
+                            label: 'Historis', 
+                            data: prodHist, 
+                            borderColor: '#2E6DA4', 
+                            backgroundColor: 'rgba(46,109,164,0.1)', 
+                            borderWidth: 2, 
+                            fill: true, 
+                            tension: 0.1, 
+                            pointRadius: 1,
+                            pointHoverRadius: 6 
                         },
-                        {
-                            label: 'Proyeksi ARIMA (Ribu Ton)',
-                            data: datasetPrediksi,
-                            borderColor: '#9CA3AF',
-                            borderWidth: 2,
-                            borderDash: [5, 5],
-                            pointBackgroundColor: datasetPrediksiColors,
-                            pointBorderColor: datasetPrediksiColors,
-                            pointRadius: 6,
-                            backgroundColor: 'transparent',
-                            tension: 0.3
+                        { 
+                            label: 'Proyeksi AI', 
+                            data: prodPred, 
+                            borderColor: '#9CA3AF', 
+                            borderWidth: 2, 
+                            borderDash: [5,5], 
+                            pointRadius: 5,
+                            pointHoverRadius: 8,
+                            tension: 0.1 
                         }
                     ]
                 },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        tooltip: { mode: 'index', intersect: false }
-                    },
-                    scales: {
-                        y: { title: { display: true, text: 'Ribu Ton' } },
-                        x: { title: { display: true, text: 'Tahun' } }
-                    }
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: false, 
+                    interaction: { mode: 'index', intersect: false }, 
+                    plugins: { legend: { position: 'bottom' } } 
                 }
             });
-        });
+
+            const ctxK = canvasK.getContext('2d');
+            chartK = new Chart(ctxK, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        { 
+                            label: 'Beban Konsumsi', 
+                            data: konsumsi, 
+                            borderColor: '#EA580C', 
+                            backgroundColor: 'rgba(234,88,12,0.05)', 
+                            borderWidth: 2, 
+                            fill: true, 
+                            tension: 0, 
+                            pointRadius: 1, 
+                            pointHoverRadius: 6 
+                        }
+                    ]
+                },
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: false, 
+                    interaction: { mode: 'index', intersect: false }, 
+                    plugins: { legend: { position: 'bottom' } } 
+                }
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => { renderAll(); });
     </script>
 </x-app-layout>

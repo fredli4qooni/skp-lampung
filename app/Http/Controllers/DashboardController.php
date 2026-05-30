@@ -10,8 +10,17 @@ class DashboardController extends Controller
 {
     public function index()
     {
-        $dataHistoris = DataBeras::orderBy('tahun', 'asc')->get();
-        $dataTerbaru = $dataHistoris->last();
+        $dataHistorisBulanan = DataBeras::orderBy('tahun', 'asc')->orderBy('bulan', 'asc')->get();
+
+        $dataHistorisTahunan = $dataHistorisBulanan->groupBy('tahun')->map(function ($items, $tahun) {
+            return (object) [
+                'tahun' => $tahun,
+                'produksi_ton' => $items->sum('produksi_ton'),
+                'ketersediaan_ton' => $items->sum('ketersediaan_ton')
+            ];
+        })->values();
+
+        $dataTerbaru = $dataHistorisTahunan->last();
 
         $latestRun = HasilPrediksi::orderBy('created_at', 'desc')->first();
         $hasilPrediksi = collect();
@@ -20,6 +29,9 @@ class DashboardController extends Controller
         $statusKondisi = 'Belum Ada Data';
         $warnaBadge = 'bg-gray-100 text-gray-800 border-gray-200';
 
+        $konsumsiTahunan = 885;
+        $konsumsiBulanan = 73.75;
+
         if ($latestRun) {
             $hasilPrediksi = HasilPrediksi::where('run_id', $latestRun->run_id)
                                           ->orderBy('tahun_prediksi', 'asc')
@@ -27,10 +39,11 @@ class DashboardController extends Controller
             $prediksiTahunDepan = $hasilPrediksi->first();
 
             if ($prediksiTahunDepan) {
-                if ($prediksiTahunDepan->status_kondisi === 'aman') {
+                $statusNorm = strtolower($prediksiTahunDepan->status_kondisi ?? '');
+                if ($statusNorm === 'aman') {
                     $statusKondisi = 'Aman';
                     $warnaBadge = 'bg-green-100 text-green-800 border-green-300';
-                } elseif ($prediksiTahunDepan->status_kondisi === 'waspada') {
+                } elseif ($statusNorm === 'waspada') {
                     $statusKondisi = 'Waspada';
                     $warnaBadge = 'bg-yellow-100 text-yellow-800 border-yellow-300';
                 } else {
@@ -41,12 +54,15 @@ class DashboardController extends Controller
         }
 
         return view('welcome', compact(
-            'dataHistoris', 
+            'dataHistorisBulanan', 
+            'dataHistorisTahunan', 
             'dataTerbaru', 
             'hasilPrediksi', 
             'prediksiTahunDepan', 
             'statusKondisi', 
-            'warnaBadge'
+            'warnaBadge',
+            'konsumsiTahunan',
+            'konsumsiBulanan'
         ));
     }
 }
