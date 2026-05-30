@@ -25,7 +25,7 @@ class DashboardController extends Controller
         $latestRun = HasilPrediksi::orderBy('created_at', 'desc')->first();
         $hasilPrediksi = collect();
         $prediksiTahunDepan = null;
-        
+
         $statusKondisi = 'Belum Ada Data';
         $warnaBadge = 'bg-gray-100 text-gray-800 border-gray-200';
 
@@ -34,8 +34,8 @@ class DashboardController extends Controller
 
         if ($latestRun) {
             $hasilPrediksi = HasilPrediksi::where('run_id', $latestRun->run_id)
-                                          ->orderBy('tahun_prediksi', 'asc')
-                                          ->get();
+                ->orderBy('tahun_prediksi', 'asc')
+                ->get();
             $prediksiTahunDepan = $hasilPrediksi->first();
 
             if ($prediksiTahunDepan) {
@@ -54,12 +54,12 @@ class DashboardController extends Controller
         }
 
         return view('welcome', compact(
-            'dataHistorisBulanan', 
-            'dataHistorisTahunan', 
-            'dataTerbaru', 
-            'hasilPrediksi', 
-            'prediksiTahunDepan', 
-            'statusKondisi', 
+            'dataHistorisBulanan',
+            'dataHistorisTahunan',
+            'dataTerbaru',
+            'hasilPrediksi',
+            'prediksiTahunDepan',
+            'statusKondisi',
             'warnaBadge',
             'konsumsiTahunan',
             'konsumsiBulanan'

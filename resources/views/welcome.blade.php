@@ -143,21 +143,9 @@
         </div>
     </footer>
 
-    <script id="historis-tahunan-json" type="application/json">
-        {
-            !!json_encode($dataHistorisTahunan ?? []) !!
-        }
-    </script>
-    <script id="historis-bulanan-json" type="application/json">
-        {
-            !!json_encode($dataHistorisBulanan ?? []) !!
-        }
-    </script>
-    <script id="prediksi-json" type="application/json">
-        {
-            !!json_encode($hasilPrediksi ?? []) !!
-        }
-    </script>
+    <script id="historis-tahunan-json" type="application/json">{!! json_encode($dataHistorisTahunan ?? []) !!}</script>
+    <script id="historis-bulanan-json" type="application/json">{!! json_encode($dataHistorisBulanan ?? []) !!}</script>
+    <script id="prediksi-json" type="application/json">{!! json_encode($hasilPrediksi ?? []) !!}</script>
 
     <script>
         let currentMode = 'tahunan';
