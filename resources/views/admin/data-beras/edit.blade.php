@@ -23,7 +23,7 @@
                             </div>
                             <div class="ml-3">
                                 <h3 class="text-sm font-bold text-[#1E3A5F]">Mode Edit Ringkas</h3>
-                                <p class="text-sm text-gray-700 mt-1">Anda cukup mengubah nilai Produksi jika ada kekeliruan data. Ketersediaan akan dikalkulasi ulang secara otomatis.</p>
+                                <p class="text-sm text-gray-700 mt-1">Anda dapat mengubah nilai Produksi dan Impor jika ada kekeliruan data. Ketersediaan akan dikalkulasi ulang secara otomatis berdasarkan beban Konsumsi yang dikunci.</p>
                             </div>
                         </div>
                     </div>
@@ -31,7 +31,7 @@
                     <form action="{{ route('admin.data-beras.update', $dataBeras->id) }}" method="POST">
                         @csrf
                         @method('PUT')
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                             <div>
                                 <x-input-label for="tahun" :value="__('Tahun')" />
                                 <x-text-input id="tahun" class="block mt-1 w-full bg-gray-100" type="number" name="tahun" :value="old('tahun', $dataBeras->tahun)" required readonly />
@@ -42,20 +42,28 @@
                                 <x-text-input class="block mt-1 w-full bg-gray-100" type="text" :value="$namaBulan[$dataBeras->bulan]" readonly />
                                 <input type="hidden" name="bulan" value="{{ $dataBeras->bulan }}">
                             </div>
+                        </div>
 
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                             <div>
-                                <x-input-label for="produksi_ton" :value="__('Produksi (Ton)')" />
-                                <x-text-input id="produksi_ton" class="block mt-1 w-full font-semibold text-[#1E3A5F]" type="number" step="0.01" name="produksi_ton" :value="old('produksi_ton', $dataBeras->produksi_ton)" required />
+                                <x-input-label for="produksi_ton" :value="__('Produksi (Ribu Ton)')" />
+                                <x-text-input id="produksi_ton" class="block mt-1 w-full input-hitung font-semibold text-[#1E3A5F]" type="number" step="0.01" name="produksi_ton" :value="old('produksi_ton', $dataBeras->produksi_ton)" required />
                             </div>
 
                             <div>
-                                <x-input-label for="konsumsi_ton" :value="__('Konsumsi (Ton) - Terkunci')" />
-                                <x-text-input id="konsumsi_ton" class="block mt-1 w-full bg-gray-100 border-gray-300 text-gray-500 italic" type="number" step="0.01" name="konsumsi_ton" :value="old('konsumsi_ton', 73750)" readonly />
+                                <x-input-label for="impor_ton" :value="__('Impor (Ribu Ton)')" />
+                                <x-text-input id="impor_ton" class="block mt-1 w-full input-hitung font-semibold text-green-600" type="number" step="0.01" name="impor_ton" :value="old('impor_ton', $dataBeras->impor_ton ?? '')" required />
                             </div>
 
-                            <div class="md:col-span-2">
-                                <x-input-label for="ketersediaan_ton" :value="__('Ketersediaan Bersih (Ton)')" />
-                                <x-text-input id="ketersediaan_ton" class="block mt-1 w-full bg-blue-50 border-blue-300 font-bold text-[#1E3A5F] text-lg" type="number" step="0.01" name="ketersediaan_ton" :value="old('ketersediaan_ton', $dataBeras->ketersediaan_ton)" required readonly />
+                            <div>
+                                <x-input-label for="konsumsi_ton" :value="__('Konsumsi (Ribu Ton)')" />
+                                <x-text-input id="konsumsi_ton" class="block mt-1 w-full input-hitung font-semibold text-orange-600 bg-white" type="number" step="0.01" name="konsumsi_ton" :value="old('konsumsi_ton', $dataBeras->konsumsi_ton ?? '')" required />
+                            </div>
+
+                            <div class="md:col-span-3 border-t pt-4">
+                                <x-input-label for="ketersediaan_ton" :value="__('Ketersediaan Bersih (Ribu Ton)')" />
+                                <x-text-input id="ketersediaan_ton" class="block mt-1 w-full bg-blue-50 border-blue-300 font-bold text-[#1E3A5F] text-lg" type="number" step="0.01" name="ketersediaan_ton" :value="old('ketersediaan_ton', $dataBeras->ketersediaan_ton)" required readonly placeholder="Kalkulasi Otomatis..." />
+                                <p class="text-xs text-gray-500 mt-1">* Rumus: (Produksi + Impor) - Konsumsi</p>
                             </div>
                         </div>
 
@@ -73,18 +81,21 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const produksiInput = document.getElementById('produksi_ton');
+            const inputs = document.querySelectorAll('.input-hitung');
             const ketersediaanInput = document.getElementById('ketersediaan_ton');
 
             function hitungKetersediaan() {
-                let produksi = parseFloat(produksiInput.value) || 0;
-                let konsumsi = 73750;
-                let ketersediaan = produksi - konsumsi;
+                let produksi = parseFloat(document.getElementById('produksi_ton').value) || 0;
+                let impor = parseFloat(document.getElementById('impor_ton').value) || 0;
+                let konsumsi = parseFloat(document.getElementById('konsumsi_ton').value) || 73.75;
+
+                let ketersediaan = (produksi + impor) - konsumsi;
                 ketersediaanInput.value = ketersediaan.toFixed(2);
             }
 
             hitungKetersediaan();
-            produksiInput.addEventListener('input', hitungKetersediaan);
+
+            inputs.forEach(input => input.addEventListener('input', hitungKetersediaan));
         });
     </script>
 </x-app-layout>

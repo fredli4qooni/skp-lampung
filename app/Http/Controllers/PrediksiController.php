@@ -35,20 +35,17 @@ class PrediksiController extends Controller
             return (object) [
                 'tahun' => $tahun,
                 'produksi_ton' => $items->sum('produksi_ton'),
+                'impor_ton' => $items->sum('impor_ton'),
+                'konsumsi_ton' => $items->sum('konsumsi_ton'),
                 'ketersediaan_ton' => $items->sum('ketersediaan_ton')
             ];
         })->values();
-
-        $konsumsiTahunan = 885;
-        $konsumsiBulanan = 73.75;
 
         return view('admin.prediksi.index', compact(
             'hasilPrediksi', 
             'dataHistorisBulanan', 
             'dataHistorisTahunan', 
-            'akurasi', 
-            'konsumsiTahunan',
-            'konsumsiBulanan'
+            'akurasi'
         ));
     }
 

@@ -26,7 +26,7 @@
                 <form action="{{ route('admin.prediksi.jalankan') }}" method="POST" onsubmit="return confirm('Jalankan komputasi model?');">
                     @csrf
                     <button type="submit" class="w-full bg-[#1E3A5F] hover:bg-[#2E6DA4] text-white font-bold py-3 px-4 rounded transition-colors flex items-center justify-center shadow-md">
-                        💥 Jalankan Proyeksi Sistem
+                        Jalankan Proyeksi Sistem
                     </button>
                 </form>
             </div>
@@ -104,11 +104,9 @@
                 <table class="min-w-full divide-y divide-gray-200 text-sm">
                     <thead class="bg-gray-50">
                         <tr>
-                            <th id="th-periode" class="px-6 py-3 text-left font-bold text-gray-600 uppercase tracking-wider">Tahun</th>
-                            <th id="th-ketersediaan" class="px-6 py-3 text-right font-bold text-gray-600 uppercase tracking-wider">Ketersediaan</th>
-                            <th id="th-konsumsi" class="px-6 py-3 text-right font-bold text-gray-600 uppercase tracking-wider">Beban Konsumsi</th>
-                            <th id="th-neraca" class="px-6 py-3 text-right font-bold text-gray-600 uppercase tracking-wider">Neraca / Selisih</th>
-                            <th class="px-6 py-3 text-center font-bold text-gray-600 uppercase tracking-wider">Kondisi</th>
+                            <th id="th-periode" class="px-6 py-4 text-left font-bold text-[#1E3A5F] uppercase tracking-wider">Periode</th>
+                            <th id="th-ketersediaan" class="px-6 py-4 text-right font-bold text-[#1E3A5F] uppercase tracking-wider">Total Ketersediaan</th>
+                            <th class="px-6 py-4 text-center font-bold text-[#1E3A5F] uppercase tracking-wider">Status Proyeksi</th>
                         </tr>
                     </thead>
                     <tbody id="tabel-prediksi-body" class="bg-white divide-y divide-gray-200">
@@ -128,30 +126,14 @@
         let currentMode = 'tahunan';
         let chartP, chartK;
 
-        const histTahunan = JSON.parse(document.getElementById('historis-tahunan-json').textContent) || [];
-        const histBulanan = JSON.parse(document.getElementById('historis-bulanan-json').textContent) || [];
-        const prediksiData = JSON.parse(document.getElementById('prediksi-json').textContent) || [];
+        const histTahunan = JSON.parse('@json($dataHistorisTahunan ?? [])');
+        const histBulanan = JSON.parse('@json($dataHistorisBulanan ?? [])');
+        const prediksiData = JSON.parse('@json($hasilPrediksi ?? [])');
 
-        const namaBulanMap = {
-            1: 'Jan',
-            2: 'Feb',
-            3: 'Mar',
-            4: 'Apr',
-            5: 'Mei',
-            6: 'Jun',
-            7: 'Jul',
-            8: 'Agu',
-            9: 'Sep',
-            10: 'Okt',
-            11: 'Nov',
-            12: 'Des'
-        };
+        const namaBulanMap = {1:'Jan', 2:'Feb', 3:'Mar', 4:'Apr', 5:'Mei', 6:'Jun', 7:'Jul', 8:'Agu', 9:'Sep', 10:'Okt', 11:'Nov', 12:'Des'};
 
         function formatId(num) {
-            return new Intl.NumberFormat('id-ID', {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2
-            }).format(num);
+            return new Intl.NumberFormat('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(num);
         }
 
         function switchMode(mode) {
@@ -160,112 +142,87 @@
             const btnB = document.getElementById('btn-bulanan');
 
             if (mode === 'tahunan') {
-                if (btnT) btnT.className = "px-5 py-2.5 text-sm font-bold rounded-l-lg border border-gray-200 bg-[#1E3A5F] text-white transition-colors";
-                if (btnB) btnB.className = "px-5 py-2.5 text-sm font-bold rounded-r-lg border-t border-b border-r border-gray-200 bg-white text-gray-700 hover:bg-gray-50 transition-colors";
-                if (document.getElementById('badge-skala-produksi')) document.getElementById('badge-skala-produksi').innerText = "Skala: Juta Ton";
-                if (document.getElementById('badge-skala-konsumsi')) document.getElementById('badge-skala-konsumsi').innerText = "Skala: Juta Ton";
-                if (document.getElementById('label-asumsi-konsumsi')) document.getElementById('label-asumsi-konsumsi').innerHTML = "Asumsi Beban: <b>0,89 Juta Ton/Tahun</b>";
+                if(btnT) btnT.className = "px-5 py-2.5 text-sm font-bold rounded-l-lg border border-gray-200 bg-[#1E3A5F] text-white transition-colors";
+                if(btnB) btnB.className = "px-5 py-2.5 text-sm font-bold rounded-r-lg border-t border-b border-r border-gray-200 bg-white text-gray-700 hover:bg-gray-50 transition-colors";
+                if(document.getElementById('badge-skala-produksi')) document.getElementById('badge-skala-produksi').innerText = "Skala: Juta Ton";
+                if(document.getElementById('badge-skala-konsumsi')) document.getElementById('badge-skala-konsumsi').innerText = "Skala: Juta Ton";
             } else {
-                if (btnB) btnB.className = "px-5 py-2.5 text-sm font-bold rounded-r-lg border border-[#1E3A5F] bg-[#1E3A5F] text-white transition-colors";
-                if (btnT) btnT.className = "px-5 py-2.5 text-sm font-bold rounded-l-lg border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 transition-colors";
-                if (document.getElementById('badge-skala-produksi')) document.getElementById('badge-skala-produksi').innerText = "Skala: Ribu Ton";
-                if (document.getElementById('badge-skala-konsumsi')) document.getElementById('badge-skala-konsumsi').innerText = "Skala: Ribu Ton";
-                if (document.getElementById('label-asumsi-konsumsi')) document.getElementById('label-asumsi-konsumsi').innerHTML = "Asumsi Beban: <b>73,75 Ribu Ton/Bulan</b>";
+                if(btnB) btnB.className = "px-5 py-2.5 text-sm font-bold rounded-r-lg border border-[#1E3A5F] bg-[#1E3A5F] text-white transition-colors";
+                if(btnT) btnT.className = "px-5 py-2.5 text-sm font-bold rounded-l-lg border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 transition-colors";
+                if(document.getElementById('badge-skala-produksi')) document.getElementById('badge-skala-produksi').innerText = "Skala: Ribu Ton";
+                if(document.getElementById('badge-skala-konsumsi')) document.getElementById('badge-skala-konsumsi').innerText = "Skala: Ribu Ton";
             }
             renderAll();
         }
 
         function renderAll() {
             let labels = [];
-            let prodHistorisVal = [];
-            let prodPrediksiVal = [];
-            let konsumsiValues = [];
+            let prodHistorisVal = [], prodPrediksiVal = [], konsumsiValues = [];
 
             let thPeriode = document.getElementById('th-periode');
             let thKetersediaan = document.getElementById('th-ketersediaan');
-            let thKonsumsi = document.getElementById('th-konsumsi');
-            let thNeraca = document.getElementById('th-neraca');
             let tbody = document.getElementById('tabel-prediksi-body');
 
-            if (!tbody) return;
+            if(!tbody) return;
             tbody.innerHTML = '';
 
             if (currentMode === 'tahunan') {
-                if (thPeriode) thPeriode.innerText = "Tahun Proyeksi";
-                if (thKetersediaan) thKetersediaan.innerText = "Ketersediaan (Juta Ton)";
-                if (thKonsumsi) thKonsumsi.innerText = "Beban Konsumsi (Juta Ton)";
-                if (thNeraca) thNeraca.innerText = "Neraca / Selisih (Juta Ton)";
+                if(thPeriode) thPeriode.innerText = "Tahun Proyeksi";
+                if(thKetersediaan) thKetersediaan.innerText = "Total Ketersediaan (Juta Ton)";
 
                 labels = [...histTahunan.map(h => h.tahun), ...prediksiData.map(p => p.tahun_prediksi)];
                 prodHistorisVal = [...histTahunan.map(h => parseFloat(h.ketersediaan_ton) / 1000), ...Array(prediksiData.length).fill(null)];
-
-                if (prediksiData.length > 0 && histTahunan.length > 0) {
-                    prodPrediksiVal = [...Array(histTahunan.length - 1).fill(null), parseFloat(histTahunan[histTahunan.length - 1].ketersediaan_ton) / 1000, ...prediksiData.map(p => parseFloat(p.nilai_prediksi) / 1000)];
+                
+                konsumsiValues = [...histTahunan.map(h => (parseFloat(h.konsumsi_ton) || 885) / 1000), ...Array(prediksiData.length).fill(null)];
+                
+                if(prediksiData.length > 0 && histTahunan.length > 0) {
+                    prodPrediksiVal = [...Array(histTahunan.length - 1).fill(null), parseFloat(histTahunan[histTahunan.length-1].ketersediaan_ton)/1000, ...prediksiData.map(p => parseFloat(p.nilai_prediksi)/1000)];
                 }
-                konsumsiValues = Array(labels.length).fill(885 / 1000);
 
                 if (prediksiData.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="5" class="px-6 py-6 text-center text-gray-500 italic">Data proyeksi masa depan belum tersedia.</td></tr>`;
+                    tbody.innerHTML = `<tr><td colspan="3" class="px-6 py-6 text-center text-gray-500 italic">Data proyeksi masa depan belum tersedia.</td></tr>`;
                 } else {
                     prediksiData.forEach(p => {
                         let ketersediaan = p.nilai_prediksi / 1000;
-                        let konsumsi = 885 / 1000;
-                        let selisih = ketersediaan - konsumsi;
                         let kondisiStr = p.status_kondisi ? p.status_kondisi.toLowerCase() : 'aman';
                         let statusBg = kondisiStr === 'aman' ? 'bg-green-100 text-green-800' : (kondisiStr === 'waspada' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800');
 
                         tbody.innerHTML += `
                             <tr class="hover:bg-gray-50 transition-colors">
                                 <td class="px-6 py-4 whitespace-nowrap font-bold text-gray-900 text-base">${p.tahun_prediksi}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-right font-semibold text-[#2E6DA4]">${formatId(ketersediaan)}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-right text-gray-600">${formatId(konsumsi)}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-right font-bold text-base ${selisih >= 0 ? 'text-green-600 bg-green-50':'text-red-600 bg-red-50'}">
-                                    ${selisih >= 0 ? 'Surplus (+)' : 'Defisit (-)'} ${formatId(Math.abs(selisih))}
-                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-right font-bold text-[#2E6DA4] text-base">${formatId(ketersediaan)}</td>
                                 <td class="px-6 py-4 whitespace-nowrap text-center">
                                     <span class="px-3 py-1 text-xs font-bold rounded uppercase ${statusBg}">${p.status_kondisi || 'AMAN'}</span>
                                 </td>
                             </tr>`;
                     });
                 }
-            }
-            else {
-                if (thPeriode) thPeriode.innerText = "Bulan Proyeksi";
-                if (thKetersediaan) thKetersediaan.innerText = "Ketersediaan (Ribu Ton)";
-                if (thKonsumsi) thKonsumsi.innerText = "Beban Konsumsi (Ribu Ton)";
-                if (thNeraca) thNeraca.innerText = "Neraca Proyeksi (Ribu Ton)";
+            } else {
+                if(thPeriode) thPeriode.innerText = "Bulan Proyeksi";
+                if(thKetersediaan) thKetersediaan.innerText = "Total Ketersediaan (Ribu Ton)";
 
                 let histLabels = histBulanan.map(h => `${namaBulanMap[h.bulan]} ${h.tahun}`);
                 let pHistVal = histBulanan.map(h => parseFloat(h.ketersediaan_ton));
                 let kHistVal = histBulanan.map(h => parseFloat(h.konsumsi_ton) || 73.75);
 
-                let predLabels = [];
-                let pPredVal = [];
-                let kPredVal = [];
+                let predLabels = [], pPredVal = [];
 
                 if (prediksiData.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="5" class="px-6 py-8 text-center text-gray-500 italic">Data proyeksi masa depan belum tersedia.</td></tr>`;
+                    tbody.innerHTML = `<tr><td colspan="3" class="px-6 py-8 text-center text-gray-500 italic">Data proyeksi masa depan belum tersedia.</td></tr>`;
                 } else {
                     prediksiData.forEach(p => {
                         let ketersediaanBulan = parseFloat(p.nilai_prediksi) / 12;
-                        let konsumsiBulan = 73.75;
-                        let selisihBulan = ketersediaanBulan - konsumsiBulan;
                         let kondisiStr = p.status_kondisi ? p.status_kondisi.toLowerCase() : 'aman';
                         let statusBg = kondisiStr === 'aman' ? 'bg-green-100 text-green-800' : (kondisiStr === 'waspada' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800');
 
-                        for (let i = 1; i <= 12; i++) {
+                        for(let i=1; i<=12; i++) {
                             predLabels.push(`${namaBulanMap[i]} ${p.tahun_prediksi}`);
                             pPredVal.push(ketersediaanBulan);
-                            kPredVal.push(konsumsiBulan);
 
                             tbody.innerHTML += `
                                 <tr class="hover:bg-gray-50 transition-colors">
                                     <td class="px-6 py-4 whitespace-nowrap font-bold text-gray-900 text-sm">${namaBulanMap[i]} ${p.tahun_prediksi}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-right font-semibold text-[#2E6DA4]">${formatId(ketersediaanBulan)}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-right text-gray-600">${formatId(konsumsiBulan)}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-right font-bold text-sm ${selisihBulan >= 0 ? 'text-green-600':'text-red-600'}">
-                                        ${selisihBulan >= 0 ? 'Surplus (+)' : 'Defisit (-)'} ${formatId(Math.abs(selisihBulan))}
-                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-right font-bold text-[#2E6DA4]">${formatId(ketersediaanBulan)}</td>
                                     <td class="px-6 py-4 whitespace-nowrap text-center">
                                         <span class="px-2 py-1 text-[10px] font-bold rounded uppercase ${statusBg}">${p.status_kondisi || 'AMAN'}</span>
                                     </td>
@@ -276,18 +233,13 @@
 
                 labels = [...histLabels, ...predLabels];
                 prodHistorisVal = [...pHistVal, ...Array(predLabels.length).fill(null)];
-
+                konsumsiValues = [...kHistVal, ...Array(predLabels.length).fill(null)];
+                
                 if (prediksiData.length > 0 && histBulanan.length > 0) {
-                    prodPrediksiVal = [
-                        ...Array(histBulanan.length - 1).fill(null),
-                        parseFloat(histBulanan[histBulanan.length - 1].ketersediaan_ton),
-                        ...pPredVal
-                    ];
+                    prodPrediksiVal = [...Array(histBulanan.length - 1).fill(null), parseFloat(histBulanan[histBulanan.length-1].ketersediaan_ton), ...pPredVal];
                 } else {
                     prodPrediksiVal = [...Array(histBulanan.length).fill(null), ...pPredVal];
                 }
-
-                konsumsiValues = [...kHistVal, ...kPredVal];
             }
 
             updateCharts(labels, prodHistorisVal, prodPrediksiVal, konsumsiValues);
@@ -296,89 +248,36 @@
         function updateCharts(labels, prodHist, prodPred, konsumsi) {
             const canvasP = document.getElementById('chartProduksi');
             const canvasK = document.getElementById('chartKonsumsi');
-            if (!canvasP || !canvasK) return;
+            if(!canvasP || !canvasK) return;
 
             if (chartP) chartP.destroy();
             if (chartK) chartK.destroy();
 
-            const ctxP = canvasP.getContext('2d');
-            chartP = new Chart(ctxP, {
+            chartP = new Chart(canvasP.getContext('2d'), {
                 type: 'line',
                 data: {
                     labels: labels,
-                    datasets: [{
-                            label: 'Historis',
-                            data: prodHist,
-                            borderColor: '#2E6DA4',
-                            backgroundColor: 'rgba(46,109,164,0.1)',
-                            borderWidth: 2,
-                            fill: true,
-                            tension: 0.1,
-                            pointRadius: 1,
-                            pointHoverRadius: 6
-                        },
-                        {
-                            label: 'Proyeksi AI',
-                            data: prodPred,
-                            borderColor: '#9CA3AF',
-                            borderWidth: 2,
-                            borderDash: [5, 5],
-                            pointRadius: 5,
-                            pointHoverRadius: 8,
-                            tension: 0.1
-                        }
+                    datasets: [
+                        { label: 'Historis (Net Ketersediaan)', data: prodHist, borderColor: '#2E6DA4', backgroundColor: 'rgba(46,109,164,0.1)', borderWidth: 2, fill: true, tension: 0.1, pointRadius: 1, pointHoverRadius: 6 },
+                        { label: 'Proyeksi AI', data: prodPred, borderColor: '#9CA3AF', borderWidth: 2, borderDash: [5,5], pointRadius: 5, pointHoverRadius: 8, tension: 0.1 }
                     ]
                 },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    interaction: {
-                        mode: 'index',
-                        intersect: false
-                    },
-                    plugins: {
-                        legend: {
-                            position: 'bottom'
-                        }
-                    }
-                }
+                options: { responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false }, plugins: { legend: { position: 'bottom' } } }
             });
 
-            const ctxK = canvasK.getContext('2d');
-            chartK = new Chart(ctxK, {
+            chartK = new Chart(canvasK.getContext('2d'), {
                 type: 'line',
                 data: {
                     labels: labels,
-                    datasets: [{
-                        label: 'Beban Konsumsi',
-                        data: konsumsi,
-                        borderColor: '#EA580C',
-                        backgroundColor: 'rgba(234,88,12,0.05)',
-                        borderWidth: 2,
-                        fill: true,
-                        tension: 0,
-                        pointRadius: 1,
-                        pointHoverRadius: 6
-                    }]
+                    datasets: [
+                        { label: 'Beban Konsumsi Aktual', data: konsumsi, borderColor: '#EA580C', backgroundColor: 'rgba(234,88,12,0.05)', borderWidth: 2, fill: true, tension: 0, pointRadius: 1, pointHoverRadius: 6 }
+                    ]
                 },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    interaction: {
-                        mode: 'index',
-                        intersect: false
-                    },
-                    plugins: {
-                        legend: {
-                            position: 'bottom'
-                        }
-                    }
-                }
+                options: { responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false }, plugins: { legend: { position: 'bottom' } } }
             });
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
-            renderAll();
-        });
+        document.addEventListener('DOMContentLoaded', () => { renderAll(); });
     </script>
+
 </x-app-layout>

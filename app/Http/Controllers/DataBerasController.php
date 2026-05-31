@@ -24,11 +24,9 @@ class DataBerasController extends Controller
     public function store(DataBerasRequest $request)
     {
         $validatedData = $request->validated();
-        $validatedData['impor_ton'] = 0;
+        
         $validatedData['ekspor_ton'] = 0;
         $validatedData['stok_awal_ton'] = 0; 
-        
-        $validatedData['konsumsi_ton'] = 73.75;
 
         DataBeras::create($validatedData);
         return redirect()->route('admin.data-beras.index')->with('success', 'Data beras berhasil ditambahkan!');
@@ -44,11 +42,9 @@ class DataBerasController extends Controller
     {
         $dataBeras = DataBeras::findOrFail($id);
         $validatedData = $request->validated();
-        $validatedData['impor_ton'] = 0;
+        
         $validatedData['ekspor_ton'] = 0;
         $validatedData['stok_awal_ton'] = 0; 
-        
-        $validatedData['konsumsi_ton'] = 73.75;
 
         $dataBeras->update($validatedData);
         return redirect()->route('admin.data-beras.index')->with('success', 'Data beras berhasil diperbarui!');

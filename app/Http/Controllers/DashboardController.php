@@ -16,6 +16,8 @@ class DashboardController extends Controller
             return (object) [
                 'tahun' => $tahun,
                 'produksi_ton' => $items->sum('produksi_ton'),
+                'impor_ton' => $items->sum('impor_ton'),
+                'konsumsi_ton' => $items->sum('konsumsi_ton'),
                 'ketersediaan_ton' => $items->sum('ketersediaan_ton')
             ];
         })->values();
@@ -28,9 +30,6 @@ class DashboardController extends Controller
 
         $statusKondisi = 'Belum Ada Data';
         $warnaBadge = 'bg-gray-100 text-gray-800 border-gray-200';
-
-        $konsumsiTahunan = 885;
-        $konsumsiBulanan = 73.75;
 
         if ($latestRun) {
             $hasilPrediksi = HasilPrediksi::where('run_id', $latestRun->run_id)
@@ -60,9 +59,7 @@ class DashboardController extends Controller
             'hasilPrediksi',
             'prediksiTahunDepan',
             'statusKondisi',
-            'warnaBadge',
-            'konsumsiTahunan',
-            'konsumsiBulanan'
+            'warnaBadge'
         ));
     }
 }
