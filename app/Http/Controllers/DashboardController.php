@@ -38,16 +38,20 @@ class DashboardController extends Controller
             $prediksiTahunDepan = $hasilPrediksi->first();
 
             if ($prediksiTahunDepan) {
-                $statusNorm = strtolower($prediksiTahunDepan->status_kondisi ?? '');
-                if ($statusNorm === 'aman') {
+                $ketJutaTon = $prediksiTahunDepan->nilai_prediksi / 1000;
+                
+                if ($ketJutaTon >= 0.50) {
                     $statusKondisi = 'Aman';
                     $warnaBadge = 'bg-green-100 text-green-800 border-green-300';
-                } elseif ($statusNorm === 'waspada') {
-                    $statusKondisi = 'Waspada';
+                } elseif ($ketJutaTon < 0.50 && $ketJutaTon >= 0.20) {
+                    $statusKondisi = 'Hati-Hati';
                     $warnaBadge = 'bg-yellow-100 text-yellow-800 border-yellow-300';
-                } else {
+                } elseif ($ketJutaTon < 0.20 && $ketJutaTon >= -0.45) {
                     $statusKondisi = 'Darurat';
                     $warnaBadge = 'bg-red-100 text-red-800 border-red-300';
+                } else { 
+                    $statusKondisi = 'Hati-Hati';
+                    $warnaBadge = 'bg-yellow-100 text-yellow-800 border-yellow-300';
                 }
             }
         }

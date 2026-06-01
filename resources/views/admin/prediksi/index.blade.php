@@ -96,10 +96,33 @@
         </div>
 
         <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200 mb-6">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-lg font-bold text-[#1E3A5F]">Tabel Proyeksi Neraca Ketersediaan</h3>
-                <span id="label-asumsi-konsumsi" class="text-sm bg-gray-100 text-gray-600 px-3 py-1 rounded border font-medium">Asumsi Beban: <b>0,89 Juta Ton/Tahun</b></span>
+            <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-6">
+                <div>
+                    <h3 class="text-lg font-bold text-[#1E3A5F] mb-1">Tabel Proyeksi Neraca Ketersediaan Beras</h3>
+                    <p class="text-sm text-gray-600 max-w-3xl">
+                        Tabel ini menampilkan kalkulasi Neraca pangan berdasarkan rumus <b>(Total Ketersediaan - Beban Konsumsi)</b> untuk mengetahui kondisi ketahanan pangan (Surplus / Defisit).
+                    </p>
+                </div>
             </div>
+
+            <div class="bg-slate-50 border border-slate-200 rounded-md p-4 mb-6 shadow-sm">
+                <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Keterangan Indikator Status Proyeksi</h4>
+                <div class="flex flex-col sm:flex-row gap-4 sm:gap-8 text-sm">
+                    <div class="flex items-center">
+                        <span class="bg-green-100 border border-green-300 w-4 h-4 rounded inline-block mr-2.5"></span>
+                        <span class="text-slate-700"><b>Aman:</b> &ge; 0,50 Juta Ton</span>
+                    </div>
+                    <div class="flex items-center">
+                        <span class="bg-yellow-100 border border-yellow-300 w-4 h-4 rounded inline-block mr-2.5"></span>
+                        <span class="text-slate-700"><b>Hati-Hati:</b> &lt; 0,45 Juta Ton </span>
+                    </div>
+                    <div class="flex items-center">
+                        <span class="bg-red-100 border border-red-300 w-4 h-4 rounded inline-block mr-2.5"></span>
+                        <span class="text-slate-700"><b>Darurat:</b> &lt; 0,20 Juta Ton </span>
+                    </div>
+                </div>
+            </div>
+
             <div class="overflow-x-auto border rounded-lg">
                 <table class="min-w-full divide-y divide-gray-200 text-sm">
                     <thead class="bg-gray-50">
@@ -115,10 +138,6 @@
             </div>
         </div>
     </div>
-
-    <script id="historis-tahunan-json" type="application/json">{!! json_encode($dataHistorisTahunan ?? []) !!}</script>
-    <script id="historis-bulanan-json" type="application/json">{!! json_encode($dataHistorisBulanan ?? []) !!}</script>
-    <script id="prediksi-json" type="application/json">{!! json_encode($hasilPrediksi ?? []) !!}</script>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
@@ -173,7 +192,10 @@
                 labels = [...histTahunan.map(h => h.tahun), ...prediksiData.map(p => p.tahun_prediksi)];
                 prodHistorisVal = [...histTahunan.map(h => parseFloat(h.ketersediaan_ton) / 1000), ...Array(prediksiData.length).fill(null)];
                 
-                konsumsiValues = [...histTahunan.map(h => (parseFloat(h.konsumsi_ton) || 885) / 1000), ...Array(prediksiData.length).fill(null)];
+                konsumsiValues = [
+                    ...histTahunan.map(h => (parseFloat(h.konsumsi_ton) || 885) / 1000), 
+                    ...Array(prediksiData.length).fill(null)
+                ];
                 
                 if(prediksiData.length > 0 && histTahunan.length > 0) {
                     prodPrediksiVal = [...Array(histTahunan.length - 1).fill(null), parseFloat(histTahunan[histTahunan.length-1].ketersediaan_ton)/1000, ...prediksiData.map(p => parseFloat(p.nilai_prediksi)/1000)];
@@ -184,15 +206,29 @@
                 } else {
                     prediksiData.forEach(p => {
                         let ketersediaan = p.nilai_prediksi / 1000;
-                        let kondisiStr = p.status_kondisi ? p.status_kondisi.toLowerCase() : 'aman';
-                        let statusBg = kondisiStr === 'aman' ? 'bg-green-100 text-green-800' : (kondisiStr === 'waspada' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800');
+                        let kondisiStr = 'AMAN';
+                        let statusBg = 'bg-green-100 text-green-800';
+
+                        if (ketersediaan >= 0.50) {
+                            kondisiStr = 'AMAN';
+                            statusBg = 'bg-green-100 text-green-800';
+                        } else if (ketersediaan < 0.50 && ketersediaan >= 0.20) {
+                            kondisiStr = 'HATI-HATI';
+                            statusBg = 'bg-yellow-100 text-yellow-800';
+                        } else if (ketersediaan < 0.20 && ketersediaan >= -0.45) {
+                            kondisiStr = 'DARURAT';
+                            statusBg = 'bg-red-100 text-red-800';
+                        } else {
+                            kondisiStr = 'HATI-HATI';
+                            statusBg = 'bg-yellow-100 text-yellow-800';
+                        }
 
                         tbody.innerHTML += `
                             <tr class="hover:bg-gray-50 transition-colors">
                                 <td class="px-6 py-4 whitespace-nowrap font-bold text-gray-900 text-base">${p.tahun_prediksi}</td>
                                 <td class="px-6 py-4 whitespace-nowrap text-right font-bold text-[#2E6DA4] text-base">${formatId(ketersediaan)}</td>
                                 <td class="px-6 py-4 whitespace-nowrap text-center">
-                                    <span class="px-3 py-1 text-xs font-bold rounded uppercase ${statusBg}">${p.status_kondisi || 'AMAN'}</span>
+                                    <span class="px-3 py-1 text-xs font-bold rounded uppercase ${statusBg}">${kondisiStr}</span>
                                 </td>
                             </tr>`;
                     });
@@ -212,8 +248,24 @@
                 } else {
                     prediksiData.forEach(p => {
                         let ketersediaanBulan = parseFloat(p.nilai_prediksi) / 12;
-                        let kondisiStr = p.status_kondisi ? p.status_kondisi.toLowerCase() : 'aman';
-                        let statusBg = kondisiStr === 'aman' ? 'bg-green-100 text-green-800' : (kondisiStr === 'waspada' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800');
+                        let ketersediaanTahunan = parseFloat(p.nilai_prediksi) / 1000;
+                        
+                        let kondisiStr = 'AMAN';
+                        let statusBg = 'bg-green-100 text-green-800';
+
+                        if (ketersediaanTahunan >= 0.50) {
+                            kondisiStr = 'AMAN';
+                            statusBg = 'bg-green-100 text-green-800';
+                        } else if (ketersediaanTahunan < 0.50 && ketersediaanTahunan >= 0.20) {
+                            kondisiStr = 'HATI-HATI';
+                            statusBg = 'bg-yellow-100 text-yellow-800';
+                        } else if (ketersediaanTahunan < 0.20 && ketersediaanTahunan >= -0.45) {
+                            kondisiStr = 'DARURAT';
+                            statusBg = 'bg-red-100 text-red-800';
+                        } else {
+                            kondisiStr = 'HATI-HATI';
+                            statusBg = 'bg-yellow-100 text-yellow-800';
+                        }
 
                         for(let i=1; i<=12; i++) {
                             predLabels.push(`${namaBulanMap[i]} ${p.tahun_prediksi}`);
@@ -224,7 +276,7 @@
                                     <td class="px-6 py-4 whitespace-nowrap font-bold text-gray-900 text-sm">${namaBulanMap[i]} ${p.tahun_prediksi}</td>
                                     <td class="px-6 py-4 whitespace-nowrap text-right font-bold text-[#2E6DA4]">${formatId(ketersediaanBulan)}</td>
                                     <td class="px-6 py-4 whitespace-nowrap text-center">
-                                        <span class="px-2 py-1 text-[10px] font-bold rounded uppercase ${statusBg}">${p.status_kondisi || 'AMAN'}</span>
+                                        <span class="px-2 py-1 text-[10px] font-bold rounded uppercase ${statusBg}">${kondisiStr}</span>
                                     </td>
                                 </tr>`;
                         }
@@ -233,6 +285,7 @@
 
                 labels = [...histLabels, ...predLabels];
                 prodHistorisVal = [...pHistVal, ...Array(predLabels.length).fill(null)];
+                
                 konsumsiValues = [...kHistVal, ...Array(predLabels.length).fill(null)];
                 
                 if (prediksiData.length > 0 && histBulanan.length > 0) {
@@ -279,5 +332,4 @@
 
         document.addEventListener('DOMContentLoaded', () => { renderAll(); });
     </script>
-
 </x-app-layout>
