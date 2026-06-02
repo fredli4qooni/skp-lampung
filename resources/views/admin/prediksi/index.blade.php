@@ -193,7 +193,7 @@
                 prodHistorisVal = [...histTahunan.map(h => parseFloat(h.ketersediaan_ton) / 1000), ...Array(prediksiData.length).fill(null)];
                 
                 konsumsiValues = [
-                    ...histTahunan.map(h => (parseFloat(h.konsumsi_ton) || 885) / 1000), 
+                    ...histTahunan.map(h => (parseFloat(h.konsumsi_ton) || 0) / 1000), 
                     ...Array(prediksiData.length).fill(null)
                 ];
                 
@@ -210,17 +210,13 @@
                         let statusBg = 'bg-green-100 text-green-800';
 
                         if (ketersediaan >= 0.50) {
-                            kondisiStr = 'AMAN';
-                            statusBg = 'bg-green-100 text-green-800';
+                            kondisiStr = 'AMAN'; statusBg = 'bg-green-100 text-green-800';
                         } else if (ketersediaan < 0.50 && ketersediaan >= 0.20) {
-                            kondisiStr = 'HATI-HATI';
-                            statusBg = 'bg-yellow-100 text-yellow-800';
+                            kondisiStr = 'HATI-HATI'; statusBg = 'bg-yellow-100 text-yellow-800';
                         } else if (ketersediaan < 0.20 && ketersediaan >= -0.45) {
-                            kondisiStr = 'DARURAT';
-                            statusBg = 'bg-red-100 text-red-800';
+                            kondisiStr = 'DARURAT'; statusBg = 'bg-red-100 text-red-800';
                         } else {
-                            kondisiStr = 'HATI-HATI';
-                            statusBg = 'bg-yellow-100 text-yellow-800';
+                            kondisiStr = 'HATI-HATI'; statusBg = 'bg-yellow-100 text-yellow-800';
                         }
 
                         tbody.innerHTML += `
@@ -233,13 +229,15 @@
                             </tr>`;
                     });
                 }
-            } else {
+            } 
+            else {
                 if(thPeriode) thPeriode.innerText = "Bulan Proyeksi";
                 if(thKetersediaan) thKetersediaan.innerText = "Total Ketersediaan (Ribu Ton)";
 
                 let histLabels = histBulanan.map(h => `${namaBulanMap[h.bulan]} ${h.tahun}`);
                 let pHistVal = histBulanan.map(h => parseFloat(h.ketersediaan_ton));
-                let kHistVal = histBulanan.map(h => parseFloat(h.konsumsi_ton) || 73.75);
+                
+                let kHistVal = histBulanan.map(h => parseFloat(h.konsumsi_ton) || 0);
 
                 let predLabels = [], pPredVal = [];
 
@@ -254,17 +252,13 @@
                         let statusBg = 'bg-green-100 text-green-800';
 
                         if (ketersediaanTahunan >= 0.50) {
-                            kondisiStr = 'AMAN';
-                            statusBg = 'bg-green-100 text-green-800';
+                            kondisiStr = 'AMAN'; statusBg = 'bg-green-100 text-green-800';
                         } else if (ketersediaanTahunan < 0.50 && ketersediaanTahunan >= 0.20) {
-                            kondisiStr = 'HATI-HATI';
-                            statusBg = 'bg-yellow-100 text-yellow-800';
+                            kondisiStr = 'HATI-HATI'; statusBg = 'bg-yellow-100 text-yellow-800';
                         } else if (ketersediaanTahunan < 0.20 && ketersediaanTahunan >= -0.45) {
-                            kondisiStr = 'DARURAT';
-                            statusBg = 'bg-red-100 text-red-800';
+                            kondisiStr = 'DARURAT'; statusBg = 'bg-red-100 text-red-800';
                         } else {
-                            kondisiStr = 'HATI-HATI';
-                            statusBg = 'bg-yellow-100 text-yellow-800';
+                            kondisiStr = 'HATI-HATI'; statusBg = 'bg-yellow-100 text-yellow-800';
                         }
 
                         for(let i=1; i<=12; i++) {
@@ -285,7 +279,6 @@
 
                 labels = [...histLabels, ...predLabels];
                 prodHistorisVal = [...pHistVal, ...Array(predLabels.length).fill(null)];
-                
                 konsumsiValues = [...kHistVal, ...Array(predLabels.length).fill(null)];
                 
                 if (prediksiData.length > 0 && histBulanan.length > 0) {

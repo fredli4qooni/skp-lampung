@@ -208,10 +208,7 @@
                 prodHistorisVal = [...histTahunan.map(h => parseFloat(h.ketersediaan_ton) / 1000), ...Array(prediksiData.length).fill(null)];
                 
                 konsumsiValues = [
-                    ...histTahunan.map(h => {
-                        let kAsli = parseFloat(h.konsumsi_ton) || 0;
-                        return kAsli > 0 ? (kAsli / 1000) : (885 / 1000);
-                    }), 
+                    ...histTahunan.map(h => (parseFloat(h.konsumsi_ton) || 0) / 1000), 
                     ...Array(prediksiData.length).fill(null)
                 ];
                 
@@ -248,7 +245,6 @@
                     });
                 }
             } 
-
             else {
                 if(thPeriode) thPeriode.innerText = "Bulan Proyeksi";
                 if(thKetersediaan) thKetersediaan.innerText = "Total Ketersediaan (Ribu Ton)";
@@ -256,10 +252,7 @@
                 let histLabels = histBulanan.map(h => `${namaBulanMap[h.bulan]} ${h.tahun}`);
                 let pHistVal = histBulanan.map(h => parseFloat(h.ketersediaan_ton));
                 
-                let kHistVal = histBulanan.map(h => {
-                    let kAsli = parseFloat(h.konsumsi_ton) || 0;
-                    return kAsli > 0 ? kAsli : 73.75;
-                });
+                let kHistVal = histBulanan.map(h => parseFloat(h.konsumsi_ton) || 0);
 
                 let predLabels = [], pPredVal = [];
 

@@ -12,20 +12,31 @@ class LaporanExport implements FromView, ShouldAutoSize
 {
     public function view(): View
     {
-        $dataBulanan = DataBeras::orderBy('tahun', 'asc')->orderBy('bulan', 'asc')->get();
-        $dataHistoris = $dataBulanan->groupBy('tahun')->map(function ($items, $tahun) {
-            return (object) [
-                'tahun' => $tahun,
-                'produksi_ton' => $items->sum('produksi_ton'),
-                'stok_awal_ton' => $items->sum('stok_awal_ton'),
-                'konsumsi_ton' => $items->sum('konsumsi_ton'),
-                'ketersediaan_ton' => $items->sum('ketersediaan_ton')
-            ];
-        })->values();
+        $dataHistoris = DataBeras::orderBy('tahun', 'asc')->orderBy('bulan', 'asc')->get();
 
         $latestRun = HasilPrediksi::orderBy('created_at', 'desc')->first();
-        $hasilPrediksi = $latestRun ? HasilPrediksi::where('run_id', $latestRun->run_id)->orderBy('tahun_prediksi', 'asc')->get() : collect();
+        $prediksi = collect();
+        
+        if ($latestRun) {
+            $prediksi = HasilPrediksi::where('run_id', $latestRun->run_id)->orderBy('tahun_prediksi', 'asc')->get();
+            
+            // Logika Status Dinamis
+            $prediksi->transform(function ($item) {
+                $ketJuta = $item->nilai_prediksi / 1000;
+                
+                if ($ketJuta >= 0.50) {
+                    $item->status_dinamis = 'AMAN';
+                } elseif ($ketJuta < 0.50 && $ketJuta >= 0.20) {
+                    $item->status_dinamis = 'HATI-HATI';
+                } elseif ($ketJuta < 0.20 && $ketJuta >= -0.45) {
+                    $item->status_dinamis = 'DARURAT';
+                } else {
+                    $item->status_dinamis = 'HATI-HATI';
+                }
+                return $item;
+            });
+        }
 
-        return view('admin.laporan.cetak', compact('dataHistoris', 'hasilPrediksi'));
+        return view('admin.laporan.cetak', compact('dataHistoris', 'prediksi'));
     }
 }
