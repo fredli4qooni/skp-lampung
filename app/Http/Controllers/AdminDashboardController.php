@@ -23,6 +23,8 @@ class AdminDashboardController extends Controller
         })->values();
 
         $dataTerbaru = $dataHistorisTahunan->last();
+        
+        $recentData = DataBeras::orderBy('tahun', 'desc')->orderBy('bulan', 'desc')->take(5)->get();
 
         $latestRun = HasilPrediksi::orderBy('created_at', 'desc')->first();
         $hasilPrediksi = collect();
@@ -57,6 +59,9 @@ class AdminDashboardController extends Controller
         }
 
         return view('dashboard', compact(
+            'dataHistorisTahunan',
+            'recentData',
+            'hasilPrediksi',
             'dataTerbaru',
             'prediksiTahunDepan',
             'statusKondisi',
