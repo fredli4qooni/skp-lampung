@@ -12,22 +12,13 @@ use Symfony\Component\Process\Process;
 
 class JalankanArima extends Command
 {
-    protected $signature = 'arima:forecast 
-                            {--p= : AR order}
-                            {--d= : Differencing order}
-                            {--q= : MA order}';
+    protected $signature = 'arima:forecast';
 
-    protected $description = 'Menjalankan prediksi ketersediaan beras menggunakan model ARIMA via Python';
+    protected $description = 'Menjalankan prediksi ketersediaan beras menggunakan model Auto ARIMA via Python';
 
     public function handle()
     {
-        $this->info('Memulai proses prediksi ARIMA...');
-
-        $p = $this->option('p') ?? KonfigurasiSistem::where('key', 'arima_default_p')->value('value') ?? 1;
-        $d = $this->option('d') ?? KonfigurasiSistem::where('key', 'arima_default_d')->value('value') ?? 1;
-        $q = $this->option('q') ?? KonfigurasiSistem::where('key', 'arima_default_q')->value('value') ?? 1;
-
-        $this->info("Menggunakan parameter ARIMA: p=$p, d=$d, q=$q");
+        $this->info('Memulai proses prediksi Auto ARIMA...');
 
         $data = DataBeras::orderBy('tahun', 'asc')->get();
         if ($data->count() < 3) {
@@ -56,8 +47,8 @@ class JalankanArima extends Command
             'SYSTEMROOT' => getenv('SYSTEMROOT') ?: 'C:\\Windows',
             'PATH' => getenv('PATH')
         ];
-        $process = new Process([$pythonPath, $scriptPath, '--p', $p, '--d', $d, '--q', $q], null, $env);
-        $process->setTimeout(120);
+        $process = new Process([$pythonPath, $scriptPath], null, $env);
+        $process->setTimeout(300);
         $process->run();
 
         if (!$process->isSuccessful()) {
@@ -103,9 +94,9 @@ class JalankanArima extends Command
                 'nilai_prediksi' => $nilaiPrediksi,
                 'lower_bound' => $pred['lower_bound'],
                 'upper_bound' => $pred['upper_bound'],
-                'parameter_p' => $p,
-                'parameter_d' => $d,
-                'parameter_q' => $q,
+                'parameter_p' => $hasil['params']['p'],
+                'parameter_d' => $hasil['params']['d'],
+                'parameter_q' => $hasil['params']['q'],
                 'mape' => $hasil['mape'],
                 'rmse' => $hasil['rmse'],
                 'status_kondisi' => $status,
@@ -113,7 +104,7 @@ class JalankanArima extends Command
             ]);
         }
 
-        $this->info('Prediksi ARIMA berhasil dijalankan dan disimpan ke database!');
+        $this->info('Prediksi Auto ARIMA berhasil dijalankan dan disimpan ke database!');
         $this->info("MAPE: {$hasil['mape']}%, RMSE: {$hasil['rmse']}");
         return 0;
     }

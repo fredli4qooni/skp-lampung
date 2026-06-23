@@ -12,9 +12,6 @@
             
             <div class="bg-[#1E3A5F] rounded-lg shadow-md mb-8 overflow-hidden border border-[#172E4D]">
                 <div class="p-6 sm:p-10 text-white flex flex-col md:flex-row justify-between items-start md:items-center gap-6 relative">
-                    <div class="absolute top-0 right-0 opacity-10 pointer-events-none">
-                        <svg width="200" height="200" viewBox="0 0 100 100" fill="currentColor"><path d="M0 0h100v100H0z"/></svg>
-                    </div>
 
                     <div class="z-10">
                         <h3 class="text-2xl sm:text-3xl font-bold mb-2 flex items-center gap-3">
