@@ -44,8 +44,9 @@ def main():
 
         # 5. Fit Model Auto ARIMA
         auto_model = pm.auto_arima(series, 
-                                   start_p=0, start_q=0,
-                                   max_p=5, max_q=5, 
+                                   start_p=1, max_p=1, 
+                                   d=1, max_d=1,
+                                   start_q=1, max_q=1, 
                                    seasonal=False, 
                                    stepwise=True, 
                                    suppress_warnings=True)
