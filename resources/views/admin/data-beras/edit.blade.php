@@ -21,7 +21,8 @@
 
                             <div>
                                 <x-input-label for="bulan" :value="__('Bulan')" />
-                                <x-text-input id="bulan" class="block mt-1 w-full bg-gray-100" type="text" name="bulan" :value="old('bulan', date('F', mktime(0, 0, 0, $dataBeras->bulan, 1)))" required readonly />
+                                <input type="hidden" name="bulan" value="{{ old('bulan', $dataBeras->bulan) }}">
+                                <x-text-input id="bulan_display" class="block mt-1 w-full bg-gray-100" type="text" :value="date('F', mktime(0, 0, 0, old('bulan', $dataBeras->bulan), 1))" required readonly />
                             </div>
                         </div>
 
