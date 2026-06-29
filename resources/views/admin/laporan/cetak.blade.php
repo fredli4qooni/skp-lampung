@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Laporan Ketahanan Pangan SKP Lampung</title>
+    <title>Laporan SKP Lampung</title>
     <style>
         body { font-family: Arial, Helvetica, sans-serif; font-size: 12px; color: #333; }
         .text-center { text-align: center; }
