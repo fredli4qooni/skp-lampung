@@ -326,12 +326,15 @@
                 options: { responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false }, plugins: { legend: { position: 'bottom' } } }
             });
 
+            let konsumsiLabels = labels.filter((_, i) => konsumsi[i] !== null);
+            let konsumsiData = konsumsi.filter(k => k !== null);
+
             chartK = new Chart(canvasK.getContext('2d'), {
                 type: 'line',
                 data: {
-                    labels: labels,
+                    labels: konsumsiLabels,
                     datasets: [
-                        { label: 'Beban Konsumsi Aktual', data: konsumsi, borderColor: '#EA580C', backgroundColor: 'rgba(234,88,12,0.05)', borderWidth: 2, fill: true, tension: 0, pointRadius: 1, pointHoverRadius: 6 }
+                        { label: 'Beban Konsumsi Aktual', data: konsumsiData, borderColor: '#EA580C', backgroundColor: 'rgba(234,88,12,0.05)', borderWidth: 2, fill: true, tension: 0, pointRadius: 1, pointHoverRadius: 6 }
                     ]
                 },
                 options: { responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false }, plugins: { legend: { position: 'bottom' } } }
