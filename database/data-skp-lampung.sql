@@ -16,9 +16,9 @@
 
 
 -- Dumping database structure for db_skp_lampung
-DROP DATABASE IF EXISTS `db_skp_lampung`;
-CREATE DATABASE IF NOT EXISTS `db_skp_lampung` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci */;
-USE `db_skp_lampung`;
+DROP DATABASE IF EXISTS `skp_lampung`;
+CREATE DATABASE IF NOT EXISTS `skp_lampung` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci */;
+USE `skp_lampung`;
 
 -- Dumping structure for table db_skp_lampung.cache
 DROP TABLE IF EXISTS `cache`;
